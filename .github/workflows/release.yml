@@ -26,7 +26,8 @@ jobs:
       - name: Prepare build directory
         run: |
           mkdir -p build
-          cp -r DEBIAN lib sbin usr build/
+          shopt -s extglob dotglob
+          cp -r !(build|.git|.github|README.md|*.deb) build/
 
       - name: Build deb package
         run: |
