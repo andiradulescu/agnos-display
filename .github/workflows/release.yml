@@ -23,9 +23,14 @@ jobs:
         run: |
           sed -i "s/^Version: .*/Version: ${{ steps.get_version.outputs.VERSION }}/" DEBIAN/control
 
+      - name: Prepare build directory
+        run: |
+          mkdir -p build
+          cp -r DEBIAN lib sbin usr build/
+
       - name: Build deb package
         run: |
-          dpkg-deb --root-owner-group --build . agnos-display_${{ steps.get_version.outputs.VERSION }}.deb
+          dpkg-deb --root-owner-group --build build agnos-display_${{ steps.get_version.outputs.VERSION }}.deb
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
