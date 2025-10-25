@@ -1,0 +1,37 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get tag version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Update package version
+        run: |
+          sed -i "s/^Version: .*/Version: ${{ steps.get_version.outputs.VERSION }}/" DEBIAN/control
+
+      - name: Build deb package
+        run: |
+          dpkg-deb --root-owner-group --build . agnos-display_${{ steps.get_version.outputs.VERSION }}.deb
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: agnos-display_${{ steps.get_version.outputs.VERSION }}.deb
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
